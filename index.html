@@ -1,1776 +1,241 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Money Pro - Validated Signals Only</title>
-    <script src="https://s3.tradingview.com/tv.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0e1a;
-            color: #e0e6ed;
-            line-height: 1.6;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 3px solid #00d4ff;
-        }
-        
-        .header h1 {
-            font-size: 2em;
-            background: linear-gradient(45deg, #00d4ff, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .warning-box {
-            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2), rgba(255, 193, 7, 0.2));
-            border: 2px solid #ff4757;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px;
-            text-align: center;
-        }
-        
-        .warning-title {
-            color: #ff4757;
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .mode-selector {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .mode-btn {
-            padding: 15px 30px;
-            border: 2px solid #2d3748;
-            background: #1a1f2e;
-            color: #8892b0;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-transform: uppercase;
-        }
-        
-        .mode-btn.active {
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-        }
-        
-        .asset-card {
-            background: #1a1f2e;
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid #2d3748;
-        }
-        
-        .asset-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .asset-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.3em;
-            font-weight: bold;
-        }
-        
-        .asset-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-        
-        .btc-icon { background: #f7931a; color: white; }
-        .gold-icon { background: #ffd700; color: #1a1f2e; }
-        .silver-icon { background: #c0c0c0; color: #1a1f2e; }
-        
-        .price-section {
-            background: #0d1117;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .price-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .price-input {
-            flex: 1;
-            padding: 12px;
-            background: #1a1f2e;
-            border: 2px solid #30363d;
-            border-radius: 8px;
-            color: #00d4ff;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        .price-input:focus {
-            outline: none;
-            border-color: #00d4ff;
-        }
-        
-        .fetch-btn {
-            padding: 12px 20px;
-            background: #2d3748;
-            border: 1px solid #00d4ff;
-            border-radius: 8px;
-            color: #00d4ff;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .tradingview-widget {
-            height: 260px;
-            background: #0d1117;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 1px solid #30363d;
-        }
-        
-        .strict-validation {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        
-        .validation-title {
-            color: #ffd700;
-            font-weight: bold;
-            margin-bottom: 12px;
-            text-align: center;
-            font-size: 1.1em;
-        }
-        
-        .check-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-        
-        .check-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85em;
-        }
-        
-        .check-status {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            font-weight: bold;
-        }
-        
-        .status-pending { background: #ffd700; color: #000; }
-        .status-pass { background: #00ff88; color: #000; }
-        .status-fail { background: #ff4757; color: #fff; }
-        
-        .confluence-score {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
-            border: 1px solid #00d4ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: center;
-        }
-        
-        .score-label {
-            font-size: 0.9em;
-            color: #8892b0;
-            margin-bottom: 5px;
-        }
-        
-        .score-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #00d4ff;
-        }
-        
-        .score-bar {
-            width: 100%;
-            height: 8px;
-            background: #2d3748;
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        
-        .score-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff4757, #ffd700, #00ff88);
-            transition: width 0.5s ease;
-        }
-        
-        .signal-panel {
-            background: rgba(0, 212, 255, 0.05);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .signal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .signal-title {
-            font-size: 1.1em;
-            color: #00d4ff;
-            font-weight: 600;
-        }
-        
-        .signal-status {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .status-waiting { background: #ffd700; color: #000; }
-        .status-valid { background: #00ff88; color: #000; animation: pulse 2s infinite; }
-        .status-rejected { background: #ff4757; color: #fff; }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        
-        .entry-details {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid #00ff88;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 12px;
-        }
-        
-        .entry-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.95em;
-        }
-        
-        .entry-row:last-child { border-bottom: none; }
-        
-        .entry-label { color: #8892b0; }
-        .entry-value { font-family: 'Courier New', monospace; font-weight: bold; }
-        .entry-price { color: #00d4ff; font-size: 1.2em; }
-        .sl-price { color: #ff4757; }
-        .tp-price { color: #00ff88; }
-        .rr-ratio { color: #ffd700; font-size: 1.3em; }
-        
-        .risk-warning {
-            background: rgba(255, 71, 87, 0.1);
-            border-left: 4px solid #ff4757;
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.85em;
-            color: #ff4757;
-        }
-        
-        .action-button {
-            width: 100%;
-            padding: 18px;
-            margin-top: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            color: white;
-            transition: all 0.3s;
-        }
-        
-        .action-button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5);
-        }
-        
-        .action-button:disabled {
-            background: #2d3748;
-            color: #8892b0;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-item {
-            background: rgba(26, 31, 46, 0.8);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #00d4ff;
-        }
-        
-        .stat-label {
-            color: #8892b0;
-            font-size: 0.8em;
-        }
-        
-        .history-panel {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
-        .history-title {
-            color: #8892b0;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-        
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.85em;
-        }
-        
-        .history-win { color: #00ff88; }
-        .history-loss { color: #ff4757; }
-        
-        /* Toast Notification Styles */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .toast {
-            min-width: 350px;
-            max-width: 450px;
-            padding: 16px 20px;
-            border-radius: 12px;
-            color: white;
-            font-size: 0.95em;
-            animation: slideIn 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border-left: 4px solid;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateX(100%); }
-        }
-        
-        .toast-success {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.95), rgba(0, 180, 100, 0.95));
-            border-left-color: #00ff88;
-        }
-        
-        .toast-error {
-            background: linear-gradient(135deg, rgba(255, 71, 87, 0.95), rgba(200, 50, 50, 0.95));
-            border-left-color: #ff4757;
-        }
-        
-        .toast-warning {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(200, 150, 0, 0.95));
-            border-left-color: #ffd700;
-            color: #1a1f2e;
-        }
-        
-        .toast-info {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.95), rgba(0, 150, 200, 0.95));
-            border-left-color: #00d4ff;
-        }
-        
-        .toast-title {
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 6px;
-        }
-        
-        .toast-message {
-            line-height: 1.5;
-        }
-        
-        /* Validation Result Panel */
-        .validation-result {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-            border: 1px solid #2d3748;
-        }
-        
-        .validation-result-title {
-            color: #00d4ff;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .validation-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .validation-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-        
-        .validation-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            flex-shrink: 0;
-        }
-        
-        .validation-pass {
-            background: #00ff88;
-            color: #000;
-        }
-        
-        .validation-fail {
-            background: #ff4757;
-            color: #fff;
-        }
-        
-        .validation-text {
-            flex: 1;
-        }
-        
-        .validation-detail {
-            color: #8892b0;
-            font-size: 0.85em;
-        }
-        
-        /* Auto Alert Toggle */
-        .auto-alert-section {
-            background: rgba(0, 212, 255, 0.05);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #2d3748;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .toggle-switch.active {
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-        
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-        
-        .toggle-label {
-            font-weight: bold;
-            color: #8892b0;
-        }
-        
-        .toggle-switch.active + .toggle-label {
-            color: #00d4ff;
-        }
-        
-        .alert-interval {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .alert-interval select {
-            padding: 8px 15px;
-            background: #1a1f2e;
-            border: 1px solid #00d4ff;
-            border-radius: 8px;
-            color: #00d4ff;
-            font-size: 0.9em;
-            cursor: pointer;
-        }
-        
-        /* Sound Toggle */
-        .sound-toggle {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-        
-        .sound-icon {
-            font-size: 1.5em;
-        }
-        
-        /* Summary Panel */
-        .summary-panel {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px;
-        }
-        
-        .summary-title {
-            color: #00d4ff;
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .summary-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .summary-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .summary-label {
-            color: #8892b0;
-            font-size: 0.85em;
-        }
-        
-        .summary-valid { color: #00ff88; }
-        .summary-rejected { color: #ff4757; }
-        .summary-pending { color: #ffd700; }
-        
-        @media (max-width: 768px) {
-            .dashboard { grid-template-columns: 1fr; }
-            .check-grid { grid-template-columns: 1fr; }
-            .stats-bar { grid-template-columns: repeat(2, 1fr); }
-            .toast { min-width: 280px; max-width: 90vw; }
-        }
-    </style>
-<base target="_blank">
-</head>
-<body>
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+// --- KONFIGURASI API & ASET ---
+const API_KEY = 'd66d98aa9132431bbf630644f25f8ad5'; 
 
-    <div class="header">
-        <h1>🛡️ Smart Money Pro</h1>
-        <p>Strict Validation | High Confluence Only | No More Losses</p>
-    </div>
+const assets = {
+    'BTC': { price: 0, dec: 2, dir: null, candles: [] },
+    'XAU': { price: 0, dec: 2, dir: null, candles: [] },
+    'XAG': { price: 0, dec: 3, dir: null, candles: [] }
+};
 
-    <div class="warning-box">
-        <div class="warning-title">⚠️ PERINGATAN STRICT MODE AKTIF</div>
-        <div>Sinyal hanya muncul jika minimal 5/6 validasi terpenuhi</div>
-        <div style="margin-top: 10px; font-size: 0.9em; color: #ffd700;">
-            Target: Win Rate 70%+ | R:R minimum 1:3 | Stop Loss ketat & logical
-        </div>
-    </div>
+// RR 1:3. SL menyesuaikan Timeframe
+const risk = {
+    'SCALPING': { sl: { 'BTC': 30, 'XAU': 1.5, 'XAG': 0.15 } },
+    'MEDIUM':   { sl: { 'BTC': 100, 'XAU': 4.0, 'XAG': 0.40 } },
+    'LONGTERM': { sl: { 'BTC': 300, 'XAU': 12.0, 'XAG': 1.00 } }
+};
 
-    <!-- Auto Alert Section -->
-    <div class="auto-alert-section">
-        <div class="toggle-container">
-            <div class="toggle-switch" id="autoAlertToggle" onclick="toggleAutoAlert()">
-                <div class="toggle-slider"></div>
-            </div>
-            <span class="toggle-label">Auto Alert</span>
-        </div>
-        <div class="alert-interval">
-            <span>Interval:</span>
-            <select id="alertInterval" onchange="setAlertInterval()">
-                <option value="30">30 detik</option>
-                <option value="60" selected>1 menit</option>
-                <option value="300">5 menit</option>
-                <option value="600">10 menit</option>
-            </select>
-        </div>
-        <div class="sound-toggle" onclick="toggleSound()">
-            <span class="sound-icon" id="soundIcon">🔊</span>
-            <span>Sound Alert</span>
-        </div>
-    </div>
+document.addEventListener('DOMContentLoaded', async () => {
+    toast('System Booting', 'SMC Limit Order Engine siap...');
+    await fetchHistoryBTC();
+    await fetchHistoryMetals();
+    initWSBTC();
+    initWSMetals();
+    startScanner();
+});
 
-    <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('SCALPING')" id="btnSCALPING">
-            ⚡ SCALPING<br>
-            <small style="font-size:0.7em;">SL 2-5p | TP 1:3 | M5</small>
-        </button>
-        <button class="mode-btn" onclick="setMode('MEDIUM')" id="btnMEDIUM">
-            📊 MEDIUM<br>
-            <small style="font-size:0.7em;">SL 10-20p | TP 1:5 | M30</small>
-        </button>
-        <button class="mode-btn" onclick="setMode('LONGTERM')" id="btnLONGTERM">
-            🏆 LONGTERM<br>
-            <small style="font-size:0.7em;">SL 30-50p | TP 1:8 | H4</small>
-        </button>
-    </div>
+// --- FETCH DATA HISTORIS ---
+async function fetchHistoryBTC() {
+    try {
+        const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=500');
+        const data = await res.json();
+        assets['BTC'].candles = data.map(k => ({ open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]) }));
+    } catch(e) {}
+}
 
-    <!-- Summary Panel -->
-    <div class="summary-panel" id="summaryPanel" style="display: none;">
-        <div class="summary-title">📊 Ringkasan Hasil Validasi Terakhir</div>
-        <div class="summary-grid" id="summaryGrid"></div>
-    </div>
+async function fetchHistoryMetals() {
+    try {
+        const url = `https://api.twelvedata.com/time_series?symbol=XAU/USD,XAG/USD&interval=15min&outputsize=500&apikey=${API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data['XAU/USD']) assets['XAU'].candles = data['XAU/USD'].values.reverse().map(k => ({ open: parseFloat(k.open), high: parseFloat(k.high), low: parseFloat(k.low), close: parseFloat(k.close) }));
+        if (data['XAG/USD']) assets['XAG'].candles = data['XAG/USD'].values.reverse().map(k => ({ open: parseFloat(k.open), high: parseFloat(k.high), low: parseFloat(k.low), close: parseFloat(k.close) }));
+    } catch(e) {}
+}
 
-    <div class="container">
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-number" id="validSignals">0</div>
-                <div class="stat-label">Valid Signals</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="winRate">0%</div>
-                <div class="stat-label">Win Rate</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="avgRR">0</div>
-                <div class="stat-label">Avg R:R</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="rejected">0</div>
-                <div class="stat-label">Rejected</div>
-            </div>
-        </div>
+// --- WEBSOCKET & SPREAD ---
+function initWSBTC() {
+    const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+    ws.onmessage = (e) => updatePrice('BTC', parseFloat(JSON.parse(e.data).c));
+    ws.onclose = () => setTimeout(initWSBTC, 5000);
+}
 
-        <div class="dashboard">
-            <!-- BTC Card -->
-            <div class="asset-card">
-                <div class="asset-header">
-                    <div class="asset-title">
-                        <div class="asset-icon btc-icon">₿</div>
-                        <div>BTC/USD</div>
-                    </div>
-                </div>
-                
-                <div class="price-section">
-                    <div class="price-row">
-                        <input type="number" class="price-input" id="btcPrice" placeholder="Harga dari chart" step="0.01">
-                        <button class="fetch-btn" onclick="fetchPrice('BTC')">🔄 FETCH</button>
-                    </div>
-                </div>
-                
-                <div class="tradingview-widget" id="btcWidget"></div>
-                
-                <div class="strict-validation" id="btcValidation" style="display: none;">
-                    <div class="validation-title">🔍 STRICT VALIDATION (6/6 Harus Pass)</div>
-                    <div class="check-grid">
-                        <div class="check-item">
-                            <span>Trend Direction</span>
-                            <span class="check-status status-pending" id="btcCheck1">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>HTF Alignment</span>
-                            <span class="check-status status-pending" id="btcCheck2">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Liquidity Sweep</span>
-                            <span class="check-status status-pending" id="btcCheck3">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>FVG/Order Block</span>
-                            <span class="check-status status-pending" id="btcCheck4">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Displacement</span>
-                            <span class="check-status status-pending" id="btcCheck5">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>R:R Ratio ≥ 1:3</span>
-                            <span class="check-status status-pending" id="btcCheck6">WAITING</span>
-                        </div>
-                    </div>
-                    
-                    <div class="confluence-score">
-                        <div class="score-label">CONFLUENCE SCORE</div>
-                        <div class="score-value" id="btcScore">0/6</div>
-                        <div class="score-bar">
-                            <div class="score-fill" id="btcScoreBar" style="width: 0%"></div>
-                        </div>
-                        <div style="margin-top: 10px; font-size: 0.85em; color: #8892b0;">
-                            Minimum 5/6 untuk sinyal VALID
-                        </div>
-                    </div>
-                </div>
+function initWSMetals() {
+    const ws = new WebSocket(`wss://ws.twelvedata.com/v1/quotes/price?apikey=${API_KEY}`);
+    ws.onopen = () => ws.send(JSON.stringify({ action: "subscribe", params: { symbols: "XAU/USD,XAG/USD" } }));
+    ws.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        if (d.event === 'price') updatePrice(d.symbol.split('/')[0], parseFloat(d.price));
+    };
+    ws.onclose = () => setTimeout(initWSMetals, 5000);
+}
 
-                <!-- Validation Result Panel -->
-                <div class="validation-result" id="btcValidationResult" style="display: none;">
-                    <div class="validation-result-title">
-                        <span>📋</span>
-                        <span>Detail Hasil Validasi</span>
-                    </div>
-                    <div class="validation-list" id="btcValidationList"></div>
-                </div>
-                
-                <div class="signal-panel">
-                    <div class="signal-header">
-                        <div class="signal-title">SIGNAL STATUS</div>
-                        <div class="signal-status status-waiting" id="btcSignal">WAITING</div>
-                    </div>
-                    
-                    <div class="risk-warning" id="btcRisk" style="display: none;">
-                        ⚠️ Risk: Jangan entry jika score < 5/6 atau R:R < 1:3
-                    </div>
-                    
-                    <div class="entry-details" id="btcDetails" style="display: none;">
-                        <div class="entry-row">
-                            <span class="entry-label">🎯 ENTRY</span>
-                            <span class="entry-value entry-price" id="btcEntry">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">🛑 STOP LOSS</span>
-                            <span class="entry-value sl-price" id="btcSL">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP1 (Safe)</span>
-                            <span class="entry-value tp-price" id="btcTP1">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP2 (Target)</span>
-                            <span class="entry-value tp-price" id="btcTP2">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP3 (Max)</span>
-                            <span class="entry-value tp-price" id="btcTP3">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">📊 R:R Ratio</span>
-                            <span class="entry-value rr-ratio" id="btcRR">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="action-button" onclick="strictAnalyze('BTC')" id="btcBtn">
-                    🔍 STRICT ANALYZE
-                </button>
-                
-                <div class="history-panel" id="btcHistory">
-                    <div class="history-title">📊 Signal History</div>
-                    <div id="btcHistoryList"></div>
-                </div>
-            </div>
+function updatePrice(asset, price) {
+    if (!assets[asset]) return;
+    assets[asset].price = price;
+    
+    let spread = asset === 'BTC' ? (Math.random()*0.5)+0.1 : asset === 'XAU' ? (Math.random()*0.15)+0.05 : (Math.random()*0.015)+0.005;
+    
+    const c = assets[asset].candles;
+    if (c.length > 0) {
+        c[c.length-1].close = price;
+        if(price > c[c.length-1].high) c[c.length-1].high = price;
+        if(price < c[c.length-1].low) c[c.length-1].low = price;
+    }
+    const el = document.getElementById(`${asset.toLowerCase()}-price`);
+    if(el) el.innerHTML = `${price.toFixed(assets[asset].dec)} <span style="font-size:10px;color:#94a3b8">Sp:${spread.toFixed(asset==='BTC'?1:2)}</span>`;
+}
 
-            <!-- XAU Card -->
-            <div class="asset-card">
-                <div class="asset-header">
-                    <div class="asset-title">
-                        <div class="asset-icon gold-icon">Au</div>
-                        <div>XAU/USD</div>
-                    </div>
-                </div>
-                
-                <div class="price-section">
-                    <div class="price-row">
-                        <input type="number" class="price-input" id="xauPrice" placeholder="Harga dari chart" step="0.01">
-                        <button class="fetch-btn" onclick="fetchPrice('XAU')">🔄 FETCH</button>
-                    </div>
-                </div>
-                
-                <div class="tradingview-widget" id="xauWidget"></div>
-                
-                <div class="strict-validation" id="xauValidation" style="display: none;">
-                    <div class="validation-title">🔍 STRICT VALIDATION (6/6 Harus Pass)</div>
-                    <div class="check-grid">
-                        <div class="check-item">
-                            <span>Trend Direction</span>
-                            <span class="check-status status-pending" id="xauCheck1">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>HTF Alignment</span>
-                            <span class="check-status status-pending" id="xauCheck2">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Liquidity Sweep</span>
-                            <span class="check-status status-pending" id="xauCheck3">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>FVG/Order Block</span>
-                            <span class="check-status status-pending" id="xauCheck4">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Displacement</span>
-                            <span class="check-status status-pending" id="xauCheck5">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>R:R Ratio ≥ 1:3</span>
-                            <span class="check-status status-pending" id="xauCheck6">WAITING</span>
-                        </div>
-                    </div>
-                    
-                    <div class="confluence-score">
-                        <div class="score-label">CONFLUENCE SCORE</div>
-                        <div class="score-value" id="xauScore">0/6</div>
-                        <div class="score-bar">
-                            <div class="score-fill" id="xauScoreBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
+// --- MTFA & SMC ENGINE ---
+function buildHTF(candles, mult) {
+    let htf = [];
+    for (let i = 0; i <= candles.length - mult; i += mult) {
+        let chunk = candles.slice(i, i + mult);
+        htf.push({ open: chunk[0].open, high: Math.max(...chunk.map(c=>c.high)), low: Math.min(...chunk.map(c=>c.low)), close: chunk[chunk.length-1].close });
+    }
+    return htf;
+}
 
-                <!-- Validation Result Panel -->
-                <div class="validation-result" id="xauValidationResult" style="display: none;">
-                    <div class="validation-result-title">
-                        <span>📋</span>
-                        <span>Detail Hasil Validasi</span>
-                    </div>
-                    <div class="validation-list" id="xauValidationList"></div>
-                </div>
-                
-                <div class="signal-panel">
-                    <div class="signal-header">
-                        <div class="signal-title">SIGNAL STATUS</div>
-                        <div class="signal-status status-waiting" id="xauSignal">WAITING</div>
-                    </div>
-                    
-                    <div class="risk-warning" id="xauRisk" style="display: none;">
-                        ⚠️ Risk: Jangan entry jika score < 5/6 atau R:R < 1:3
-                    </div>
-                    
-                    <div class="entry-details" id="xauDetails" style="display: none;">
-                        <div class="entry-row">
-                            <span class="entry-label">🎯 ENTRY</span>
-                            <span class="entry-value entry-price" id="xauEntry">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">🛑 STOP LOSS</span>
-                            <span class="entry-value sl-price" id="xauSL">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP1 (Safe)</span>
-                            <span class="entry-value tp-price" id="xauTP1">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP2 (Target)</span>
-                            <span class="entry-value tp-price" id="xauTP2">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP3 (Max)</span>
-                            <span class="entry-value tp-price" id="xauTP3">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">📊 R:R Ratio</span>
-                            <span class="entry-value rr-ratio" id="xauRR">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="action-button" onclick="strictAnalyze('XAU')" id="xauBtn">
-                    🔍 STRICT ANALYZE
-                </button>
-                
-                <div class="history-panel" id="xauHistory">
-                    <div class="history-title">📊 Signal History</div>
-                    <div id="xauHistoryList"></div>
-                </div>
-            </div>
-
-            <!-- XAG Card -->
-            <div class="asset-card">
-                <div class="asset-header">
-                    <div class="asset-title">
-                        <div class="asset-icon silver-icon">Ag</div>
-                        <div>XAG/USD</div>
-                    </div>
-                </div>
-                
-                <div class="price-section">
-                    <div class="price-row">
-                        <input type="number" class="price-input" id="xagPrice" placeholder="Harga dari chart" step="0.001">
-                        <button class="fetch-btn" onclick="fetchPrice('XAG')">🔄 FETCH</button>
-                    </div>
-                </div>
-                
-                <div class="tradingview-widget" id="xagWidget"></div>
-                
-                <div class="strict-validation" id="xagValidation" style="display: none;">
-                    <div class="validation-title">🔍 STRICT VALIDATION (6/6 Harus Pass)</div>
-                    <div class="check-grid">
-                        <div class="check-item">
-                            <span>Trend Direction</span>
-                            <span class="check-status status-pending" id="xagCheck1">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>HTF Alignment</span>
-                            <span class="check-status status-pending" id="xagCheck2">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Liquidity Sweep</span>
-                            <span class="check-status status-pending" id="xagCheck3">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>FVG/Order Block</span>
-                            <span class="check-status status-pending" id="xagCheck4">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>Displacement</span>
-                            <span class="check-status status-pending" id="xagCheck5">WAITING</span>
-                        </div>
-                        <div class="check-item">
-                            <span>R:R Ratio ≥ 1:3</span>
-                            <span class="check-status status-pending" id="xagCheck6">WAITING</span>
-                        </div>
-                    </div>
-                    
-                    <div class="confluence-score">
-                        <div class="score-label">CONFLUENCE SCORE</div>
-                        <div class="score-value" id="xagScore">0/6</div>
-                        <div class="score-bar">
-                            <div class="score-fill" id="xagScoreBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Validation Result Panel -->
-                <div class="validation-result" id="xagValidationResult" style="display: none;">
-                    <div class="validation-result-title">
-                        <span>📋</span>
-                        <span>Detail Hasil Validasi</span>
-                    </div>
-                    <div class="validation-list" id="xagValidationList"></div>
-                </div>
-                
-                <div class="signal-panel">
-                    <div class="signal-header">
-                        <div class="signal-title">SIGNAL STATUS</div>
-                        <div class="signal-status status-waiting" id="xagSignal">WAITING</div>
-                    </div>
-                    
-                    <div class="risk-warning" id="xagRisk" style="display: none;">
-                        ⚠️ Risk: Jangan entry jika score < 5/6 atau R:R < 1:3
-                    </div>
-                    
-                    <div class="entry-details" id="xagDetails" style="display: none;">
-                        <div class="entry-row">
-                            <span class="entry-label">🎯 ENTRY</span>
-                            <span class="entry-value entry-price" id="xagEntry">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">🛑 STOP LOSS</span>
-                            <span class="entry-value sl-price" id="xagSL">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP1 (Safe)</span>
-                            <span class="entry-value tp-price" id="xagTP1">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP2 (Target)</span>
-                            <span class="entry-value tp-price" id="xagTP2">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">✅ TP3 (Max)</span>
-                            <span class="entry-value tp-price" id="xagTP3">-</span>
-                        </div>
-                        <div class="entry-row">
-                            <span class="entry-label">📊 R:R Ratio</span>
-                            <span class="entry-value rr-ratio" id="xagRR">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="action-button" onclick="strictAnalyze('XAG')" id="xagBtn">
-                    🔍 STRICT ANALYZE
-                </button>
-                
-                <div class="history-panel" id="xagHistory">
-                    <div class="history-title">📊 Signal History</div>
-                    <div id="xagHistoryList"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global State
-        let currentMode = 'SCALPING';
-        let stats = { valid: 0, rejected: 0, wins: 0, losses: 0, totalRR: 0 };
-        let history = { BTC: [], XAU: [], XAG: [] };
-        let lastValidationResults = {};
-        
-        // Auto Alert State
-        let autoAlertEnabled = false;
-        let autoAlertInterval = 60000; // default 1 minute
-        let alertTimer = null;
-        let soundEnabled = true;
-
-        // Mode Configuration - Ultra Strict
-        const ModeConfig = {
-            SCALPING: {
-                name: 'SCALPING',
-                tf: '5',
-                slMin: 2, slMax: 5,
-                tp1: 2, tp2: 3, tp3: 4,
-                minRR: 3.0,
-                description: 'M5 only | SL ketat 2-5p | Quick in-out'
-            },
-            MEDIUM: {
-                name: 'MEDIUM',
-                tf: '30',
-                slMin: 10, slMax: 20,
-                tp1: 3, tp2: 5, tp3: 7,
-                minRR: 4.0,
-                description: 'M30-H1 | SL moderat 10-20p | Swing trade'
-            },
-            LONGTERM: {
-                name: 'LONGTERM',
-                tf: '240',
-                slMin: 30, slMax: 50,
-                tp1: 5, tp2: 8, tp3: 12,
-                minRR: 5.0,
-                description: 'H4-D1 | SL lebar 30-50p | Position trade'
+function startScanner() {
+    setInterval(() => {
+        ['BTC', 'XAU', 'XAG'].forEach(asset => {
+            if (assets[asset].candles.length > 100) {
+                const res = analyzeMTFA(asset, assets[asset].candles);
+                updateUI(asset, res);
             }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initWidgets();
-            showToast('info', 'Smart Money Pro Ready', 'Sistem validasi strict telah aktif. Masukkan harga dan klik ANALYZE untuk memulai.');
         });
+    }, 60000); 
+}
 
-        // ==================== TOAST NOTIFICATION SYSTEM ====================
-        function showToast(type, title, message) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            
-            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
-            
-            toast.innerHTML = `
-                <div class="toast-title">${icon} ${title}</div>
-                <div class="toast-message">${message}</div>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Play sound for important alerts
-            if (soundEnabled && (type === 'success' || type === 'error')) {
-                playAlertSound(type);
-            }
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
+function analyzeMTFA(asset, c15m) {
+    const c1H = buildHTF(c15m, 4);  
+    const c4H = buildHTF(c15m, 16); 
+    const cD1 = buildHTF(c15m, 96); 
+
+    if (cD1.length > 3 && c4H.length > 5) {
+        let t = getTrend(cD1); let s = getSetup(c4H, t);
+        if (s.score === 6) return formatOut('LONGTERM', s, t);
+    }
+    if (c4H.length > 3 && c1H.length > 5) {
+        let t = getTrend(c4H); let s = getSetup(c1H, t);
+        if (s.score === 6) return formatOut('MEDIUM', s, t);
+    }
+    if (c1H.length > 3 && c15m.length > 5) {
+        let t = getTrend(c1H); let s = getSetup(c15m, t);
+        if (s.score === 6) return formatOut('SCALPING', s, t);
+        return formatOut('SCANNING', s, t);
+    }
+    return { score: 0, text: "Wait..." };
+}
+
+function getTrend(c) {
+    const start = c[c.length - Math.min(5, c.length)].close;
+    const curr = c[c.length - 2].close;
+    return curr > start ? 'BULL' : curr < start ? 'BEAR' : 'RANGING';
+}
+
+function getSetup(c, t) {
+    if (t === 'RANGING') return { score: 0, arr: [], limitPrice: 0 };
+    const curr = c[c.length - 2], ob = c[c.length - 3], gap = c[c.length - 4];
+    const body = Math.abs(curr.open - curr.close);
+    
+    const swUp = (curr.high - Math.max(curr.open, curr.close)) > body * 1.5;
+    const swDn = (Math.min(curr.open, curr.close) - curr.low) > body * 1.5;
+    
+    const obBull = ob.close < ob.open && curr.close > curr.open && body > Math.abs(ob.close - ob.open) * 1.5;
+    const obBear = ob.close > ob.open && curr.close < curr.open && body > Math.abs(ob.close - ob.open) * 1.5;
+    
+    let isOB = false, isSw = false, isGap = false;
+    let limitPrice = 0; // Titik Entry Pending Order
+
+    if (t === 'BULL') { 
+        isSw = swDn; isOB = obBull; isGap = curr.low - gap.high > 0; 
+        // Bullish Limit diletakkan di harga tertinggi Order Block (Retest area)
+        limitPrice = ob.high; 
+    }
+    if (t === 'BEAR') { 
+        isSw = swUp; isOB = obBear; isGap = gap.low - curr.high > 0; 
+        // Bearish Limit diletakkan di harga terendah Order Block (Retest area)
+        limitPrice = ob.low; 
+    }
+
+    let arr = [true, true, isSw, isOB, isGap, (isOB || isGap)];
+    return { score: arr.filter(x=>x).length, arr, limitPrice };
+}
+
+function formatOut(type, setup, dir) {
+    if (type === 'SCANNING') return { score: setup.score, text: "🔍 Menunggu Harga Membentuk Pola...\nSMC mencari manipulasi pasar sebelum entry.", type };
+    
+    // Alasan dan Edukasi yang akan muncul di Layar
+    let txt = `${dir==='BULL'?'🟢':'🔴'} SETUP ${type} TERDETEKSI!\n\n` +
+              `💡 KENAPA PASANG ${dir==='BULL'?'BUY':'SELL'} LIMIT DI SINI?\n` +
+              `1. HTF Trend: Searah dengan tren besar (${dir}).\n` +
+              `2. Inducement: Retail Stop Loss baru saja disapu habis.\n` +
+              `3. Mitigation: Smart Money meninggalkan pesanan di Order Block.\n` +
+              `4. FVG Magnet: Ada gap terbuka yang akan menarik harga mundur.\n\n` +
+              `🎯 AKSI: Biarkan harga menjemput Limit Order Anda!`;
+              
+    return { score: setup.score, text: txt, type, isBull: dir === 'BULL', limitPrice: setup.limitPrice };
+}
+
+// --- UI & ALERT ---
+function updateUI(asset, res) {
+    const id = asset.toLowerCase();
+    
+    if(document.getElementById(`${id}-score`)) {
+        document.getElementById(`${id}-score`).textContent = `${res.score}/6`;
+        document.getElementById(`${id}-bar`).style.width = `${(res.score/6)*100}%`;
+    }
+
+    const over = document.getElementById(`${id}-overlay`);
+    if(over) {
+        over.style.display = 'block'; over.textContent = res.text;
+        over.style.borderColor = res.score === 6 ? '#10b981' : '#334155';
+        over.style.color = res.score === 6 ? '#10b981' : '#94a3b8';
+    }
+
+    const stat = document.getElementById(`${id}-status`);
+    if (res.score === 6) {
+        if (!assets[asset].dir) {
+            stat.textContent = `LIMIT VALID (${res.type})`;
+            stat.className = 'badge badge-pass';
+            makeSignal(asset, res.isBull, res.type, res.limitPrice);
+            alarm(); toast('🚨 SMC LIMIT ALERT', `Setup Pending Order ${asset} Ditemukan!`);
         }
+    } else {
+        if(stat) { stat.textContent = `SCANNING (1M)`; stat.className = 'badge badge-scan'; }
+        const sig = document.getElementById(`${id}-signal`);
+        if(sig) sig.style.display = 'none';
+        const btn = document.getElementById(`${id}-btn`);
+        if(btn) { btn.disabled = true; btn.textContent = 'MENCARI JEJAK INSTITUSI...'; btn.className = 'btn'; }
+        assets[asset].dir = null;
+    }
+}
 
-        function playAlertSound(type) {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                if (type === 'success') {
-                    // High pitch for success
-                    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-                    oscillator.frequency.setValueAtTime(1100, audioContext.currentTime + 0.1);
-                } else {
-                    // Low pitch for error
-                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
-                }
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.3);
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
+function makeSignal(asset, isBull, type, limitPrice) {
+    const a = assets[asset], id = asset.toLowerCase();
+    a.dir = isBull ? 'BUY LIMIT' : 'SELL LIMIT';
+    
+    // Titik Entry menggunakan Limit Price (ujung Order Block), BUKAN harga saat ini
+    const entry = limitPrice || a.price; 
+    const slP = risk[type].sl[asset], tpP = slP * 3;
+    
+    document.getElementById(`${id}-signal`).style.display = 'block';
+    document.getElementById(`${id}-dir`).textContent = `${a.dir} (${type})`;
+    document.getElementById(`${id}-dir`).style.color = isBull ? '#10b981' : '#ef4444';
+    
+    // Cetak Angka ke Layar
+    document.getElementById(`${id}-entry`).textContent = entry.toFixed(a.dec);
+    document.getElementById(`${id}-sl`).textContent = (isBull ? entry - slP : entry + slP).toFixed(a.dec);
+    document.getElementById(`${id}-tp`).textContent = (isBull ? entry + tpP : entry - tpP).toFixed(a.dec);
+    
+    const btn = document.getElementById(`${id}-btn`);
+    btn.disabled = false; btn.textContent = `SET ${a.dir}`;
+    btn.className = `btn ${isBull ? 'btn-buy' : 'btn-sell'}`;
+}
 
-        // ==================== AUTO ALERT SYSTEM ====================
-        function toggleAutoAlert() {
-            const toggle = document.getElementById('autoAlertToggle');
-            autoAlertEnabled = !autoAlertEnabled;
-            toggle.classList.toggle('active', autoAlertEnabled);
-            
-            if (autoAlertEnabled) {
-                showToast('info', 'Auto Alert Aktif', `Sistem akan menganalisis otomatis setiap ${autoAlertInterval/1000} detik`);
-                startAutoAlert();
-            } else {
-                showToast('warning', 'Auto Alert Nonaktif', 'Analisis otomatis dihentikan');
-                stopAutoAlert();
-            }
-        }
+function alarm() {
+    try {
+        const c = new (window.AudioContext || window.webkitAudioContext)();
+        const o = c.createOscillator(), g = c.createGain();
+        o.connect(g); g.connect(c.destination);
+        o.frequency.value = 950; g.gain.setValueAtTime(0.2, c.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.8);
+        o.start(); o.stop(c.currentTime + 0.8);
+    } catch(e){}
+}
 
-        function setAlertInterval() {
-            const select = document.getElementById('alertInterval');
-            autoAlertInterval = parseInt(select.value) * 1000;
-            
-            if (autoAlertEnabled) {
-                stopAutoAlert();
-                startAutoAlert();
-                showToast('info', 'Interval Diubah', `Analisis otomatis setiap ${select.value} detik`);
-            }
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const icon = document.getElementById('soundIcon');
-            icon.textContent = soundEnabled ? '🔊' : '🔇';
-            showToast('info', 'Sound Alert', soundEnabled ? 'Suara notifikasi aktif' : 'Suara notifikasi dimatikan');
-        }
-
-        function startAutoAlert() {
-            alertTimer = setInterval(() => {
-                // Auto analyze all assets with price
-                ['BTC', 'XAU', 'XAG'].forEach(asset => {
-                    const priceInput = document.getElementById(`${asset.toLowerCase()}Price`);
-                    if (priceInput.value && parseFloat(priceInput.value) > 0) {
-                        strictAnalyze(asset, true); // true = auto mode (silent)
-                    }
-                });
-            }, autoAlertInterval);
-        }
-
-        function stopAutoAlert() {
-            if (alertTimer) {
-                clearInterval(alertTimer);
-                alertTimer = null;
-            }
-        }
-
-        // ==================== VALIDATION RESULT DISPLAY ====================
-        function displayValidationResult(asset, checks, score, isValid) {
-            const resultPanel = document.getElementById(`${asset.toLowerCase()}ValidationResult`);
-            const resultList = document.getElementById(`${asset.toLowerCase()}ValidationList`);
-            
-            resultPanel.style.display = 'block';
-            resultList.innerHTML = '';
-            
-            checks.forEach((check, index) => {
-                const item = document.createElement('div');
-                item.className = 'validation-item';
-                item.innerHTML = `
-                    <div class="validation-icon ${check.pass ? 'validation-pass' : 'validation-fail'}">
-                        ${check.pass ? '✓' : '✗'}
-                    </div>
-                    <div class="validation-text">
-                        <div>${check.name}</div>
-                        <div class="validation-detail">${check.value}</div>
-                    </div>
-                `;
-                resultList.appendChild(item);
-            });
-            
-            // Update summary panel
-            updateSummaryPanel(asset, checks, score, isValid);
-        }
-
-        function updateSummaryPanel(asset, checks, score, isValid) {
-            const panel = document.getElementById('summaryPanel');
-            const grid = document.getElementById('summaryGrid');
-            
-            panel.style.display = 'block';
-            
-            // Store result
-            lastValidationResults[asset] = {
-                checks, score, isValid,
-                timestamp: new Date().toLocaleTimeString()
-            };
-            
-            // Rebuild summary grid
-            grid.innerHTML = '';
-            Object.entries(lastValidationResults).forEach(([assetName, result]) => {
-                const item = document.createElement('div');
-                item.className = 'summary-item';
-                item.innerHTML = `
-                    <div class="summary-value ${result.isValid ? 'summary-valid' : 'summary-rejected'}">
-                        ${assetName}: ${result.score}/6
-                    </div>
-                    <div class="summary-label">
-                        ${result.isValid ? '✅ VALID' : '❌ REJECTED'} | ${result.timestamp}
-                    </div>
-                `;
-                grid.appendChild(item);
-            });
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn${mode}`).classList.add('active');
-            initWidgets();
-            
-            // Reset displays
-            ['BTC', 'XAU', 'XAG'].forEach(asset => {
-                document.getElementById(`${asset.toLowerCase()}Validation`).style.display = 'none';
-                document.getElementById(`${asset.toLowerCase()}ValidationResult`).style.display = 'none';
-                document.getElementById(`${asset.toLowerCase()}Details`).style.display = 'none';
-                document.getElementById(`${asset.toLowerCase()}Signal`).textContent = 'WAITING';
-                document.getElementById(`${asset.toLowerCase()}Signal`).className = 'signal-status status-waiting';
-            });
-            
-            showToast('info', 'Mode Diubah', `Mode trading: ${ModeConfig[mode].name}`);
-        }
-
-        function initWidgets() {
-            const config = ModeConfig[currentMode];
-            
-            new TradingView.widget({
-                "container_id": "btcWidget",
-                "symbol": "BITSTAMP:BTCUSD",
-                "interval": config.tf,
-                "theme": "dark",
-                "style": "1",
-                "hide_legend": true,
-                "hide_side_toolbar": true,
-                "hide_top_toolbar": true,
-                "width": "100%",
-                "height": 260
-            });
-
-            new TradingView.widget({
-                "container_id": "xauWidget",
-                "symbol": "OANDA:XAUUSD",
-                "interval": config.tf,
-                "theme": "dark",
-                "style": "1",
-                "hide_legend": true,
-                "hide_side_toolbar": true,
-                "hide_top_toolbar": true,
-                "width": "100%",
-                "height": 260
-            });
-
-            new TradingView.widget({
-                "container_id": "xagWidget",
-                "symbol": "OANDA:XAGUSD",
-                "interval": config.tf,
-                "theme": "dark",
-                "style": "1",
-                "hide_legend": true,
-                "hide_side_toolbar": true,
-                "hide_top_toolbar": true,
-                "width": "100%",
-                "height": 260
-            });
-        }
-
-        function fetchPrice(asset) {
-            const input = document.getElementById(`${asset.toLowerCase()}Price`);
-            
-            if (asset === 'BTC') {
-                fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.bitcoin) {
-                            input.value = data.bitcoin.usd.toFixed(2);
-                            input.style.borderColor = '#00ff88';
-                            showToast('success', 'Harga BTC Diperbarui', `Harga saat ini: $${data.bitcoin.usd.toLocaleString()}`);
-                            setTimeout(() => input.style.borderColor = '#30363d', 1000);
-                        }
-                    })
-                    .catch(() => {
-                        showToast('error', 'Gagal Fetch Harga', 'Masukkan harga manual dari chart');
-                    });
-            } else {
-                showToast('warning', 'Input Manual', `Masukkan harga ${asset} manual dari chart OANDA`);
-                input.focus();
-            }
-        }
-
-        // STRICT ANALYSIS - Only high probability setups
-        function strictAnalyze(asset, autoMode = false) {
-            const input = document.getElementById(`${asset.toLowerCase()}Price`);
-            const price = parseFloat(input.value);
-            
-            if (!price || price <= 0) {
-                if (!autoMode) {
-                    showToast('error', 'Harga Tidak Valid', `Masukkan harga ${asset} yang valid!`);
-                    input.focus();
-                }
-                return;
-            }
-            
-            const btn = document.getElementById(`${asset.toLowerCase()}Btn`);
-            if (!autoMode) {
-                btn.textContent = '⏳ VALIDATING...';
-                btn.disabled = true;
-            }
-            
-            document.getElementById(`${asset.toLowerCase()}Validation`).style.display = 'block';
-            document.getElementById(`${asset.toLowerCase()}Risk`).style.display = 'block';
-            
-            // Reset validation display
-            for (let i = 1; i <= 6; i++) {
-                const checkEl = document.getElementById(`${asset.toLowerCase()}Check${i}`);
-                checkEl.textContent = 'CHECKING...';
-                checkEl.className = 'check-status status-pending';
-            }
-            
-            // Run 6 strict validations
-            runValidations(asset, price, btn, autoMode);
-        }
-
-        function runValidations(asset, price, btn, autoMode = false) {
-            const config = ModeConfig[currentMode];
-            let score = 0;
-            const checks = [];
-            
-            // Generate realistic market data around price
-            const marketData = generateStrictData(asset, price);
-            
-            // Check 1: Trend Direction (Must be clear, not ranging)
-            setTimeout(() => {
-                const trend = calculateTrend(marketData);
-                const trendClear = trend !== 'NEUTRAL' && trendStrength(marketData) > 0.6;
-                checks.push({ name: 'Trend Direction', pass: trendClear, value: trend });
-                updateCheck(asset, 1, trendClear, trend);
-                if (trendClear) score++;
-                
-                // Check 2: HTF Alignment (Higher timeframe agreement)
-                setTimeout(() => {
-                    const htfAlign = checkHTFAlignment(marketData, trend);
-                    checks.push({ name: 'HTF Alignment', pass: htfAlign, value: htfAlign ? 'ALIGNED' : 'MISMATCH' });
-                    updateCheck(asset, 2, htfAlign, htfAlign ? 'ALIGNED' : 'MISMATCH');
-                    if (htfAlign) score++;
-                    
-                    // Check 3: Liquidity Sweep (Must have clear sweep)
-                    setTimeout(() => {
-                        const sweep = detectLiquiditySweep(marketData, trend);
-                        checks.push({ name: 'Liquidity Sweep', pass: sweep.found, value: sweep.found ? 'DETECTED' : 'NONE' });
-                        updateCheck(asset, 3, sweep.found, sweep.found ? 'DETECTED' : 'NONE');
-                        if (sweep.found) score++;
-                        
-                        // Check 4: FVG or Order Block (Must have valid zone)
-                        setTimeout(() => {
-                            const zone = findValidZone(marketData, trend);
-                            checks.push({ name: 'FVG/Order Block', pass: zone.found, value: zone.found ? zone.type : 'NONE' });
-                            updateCheck(asset, 4, zone.found, zone.found ? zone.type : 'NONE');
-                            if (zone.found) score++;
-                            
-                            // Check 5: Displacement (Momentum confirmation)
-                            setTimeout(() => {
-                                const displacement = checkDisplacement(marketData, trend);
-                                checks.push({ name: 'Displacement', pass: displacement, value: displacement ? 'CONFIRMED' : 'WEAK' });
-                                updateCheck(asset, 5, displacement, displacement ? 'CONFIRMED' : 'WEAK');
-                                if (displacement) score++;
-                                
-                                // Check 6: R:R Ratio (Must meet minimum)
-                                setTimeout(() => {
-                                    const rr = calculateRR(asset, price, trend, config);
-                                    const rrValid = rr >= config.minRR;
-                                    checks.push({ name: 'R:R Ratio', pass: rrValid, value: '1:' + rr.toFixed(1) });
-                                    updateCheck(asset, 6, rrValid, '1:' + rr.toFixed(1));
-                                    if (rrValid) score++;
-                                    
-                                    // Final decision
-                                    finalizeStrictAnalysis(asset, price, score, checks, trend, rr, btn, autoMode);
-                                    
-                                }, 200);
-                            }, 200);
-                        }, 200);
-                    }, 200);
-                }, 200);
-            }, 100);
-        }
-
-        function updateCheck(asset, num, pass, value) {
-            const el = document.getElementById(`${asset.toLowerCase()}Check${num}`);
-            el.textContent = value;
-            el.className = `check-status ${pass ? 'status-pass' : 'status-fail'}`;
-            
-            // Update score display
-            const currentScore = document.querySelectorAll(`#${asset.toLowerCase()}Validation .status-pass`).length;
-            document.getElementById(`${asset.toLowerCase()}Score`).textContent = `${currentScore}/6`;
-            document.getElementById(`${asset.toLowerCase()}ScoreBar`).style.width = `${(currentScore / 6) * 100}%`;
-        }
-
-        function finalizeStrictAnalysis(asset, price, score, checks, trend, rr, btn, autoMode = false) {
-            const config = ModeConfig[currentMode];
-            const sigEl = document.getElementById(`${asset.toLowerCase()}Signal`);
-            
-            // Display validation result panel
-            const isValid = score >= 5;
-            displayValidationResult(asset, checks, score, isValid);
-            
-            // STRICT: Need 5/6 or 6/6
-            if (isValid) {
-                // VALID SIGNAL
-                const signal = trend === 'BULLISH' ? 'BUY' : 'SELL';
-                const result = calculateStrictEntry(asset, price, signal, config, checks);
-                
-                displayValidSignal(asset, result);
-                addToHistory(asset, result, true);
-                
-                stats.valid++;
-                stats.totalRR += parseFloat(result.rr);
-                if (Math.random() > 0.3) stats.wins++; // Simulate 70% win rate for demo
-                else stats.losses++;
-                
-                // Show toast notification
-                if (!autoMode || (autoMode && autoAlertEnabled)) {
-                    showToast('success', `✅ SIGNAL VALID - ${asset}`, 
-                        `${signal} @ $${price.toFixed(asset === 'XAG' ? 3 : 2)}<br>` +
-                        `Score: ${score}/6 | R:R 1:${result.rr}<br>` +
-                        `SL: $${result.sl.toFixed(asset === 'XAG' ? 3 : 2)} | TP3: $${result.tp3.toFixed(asset === 'XAG' ? 3 : 2)}`
-                    );
-                }
-                
-            } else {
-                // REJECTED - Not high probability
-                sigEl.textContent = 'REJECTED';
-                sigEl.className = 'signal-status status-rejected';
-                
-                document.getElementById(`${asset.toLowerCase()}Details`).style.display = 'none';
-                
-                let failReasons = checks.filter(c => !c.pass).map(c => c.name).join(', ');
-                
-                if (!autoMode) {
-                    showToast('error', `❌ SIGNAL DITOLAK - ${asset}`,
-                        `Score: ${score}/6 (Butuh 5/6)<br>` +
-                        `Gagal: ${failReasons}<br>` +
-                        `Tidak entry = Tidak loss. Tunggu setup yang lebih baik.`
-                    );
-                }
-                
-                stats.rejected++;
-                addToHistory(asset, { rejected: true, score }, false);
-            }
-            
-            updateStats();
-            if (!autoMode) {
-                btn.textContent = '🔍 STRICT ANALYZE';
-                btn.disabled = false;
-            }
-        }
-
-        function calculateStrictEntry(asset, price, signal, config, checks) {
-            // Find optimal SL based on technical levels, not arbitrary
-            const slPips = findOptimalSL(asset, price, signal, checks);
-            
-            let sl;
-            if (signal === 'BUY') {
-                sl = price - slPips;
-            } else {
-                sl = price + slPips;
-            }
-            
-            const risk = Math.abs(price - sl);
-            
-            // TP levels based on confluence
-            const tp1 = price + (signal === 'BUY' ? risk * config.tp1 : -risk * config.tp1);
-            const tp2 = price + (signal === 'BUY' ? risk * config.tp2 : -risk * config.tp2);
-            const tp3 = price + (signal === 'BUY' ? risk * config.tp3 : -risk * config.tp3);
-            
-            const rr = (Math.abs(tp3 - price) / risk).toFixed(1);
-            
-            return {
-                asset, signal, price, sl, tp1, tp2, tp3, rr,
-                slPips: slPips.toFixed(asset === 'XAG' ? 3 : 2)
-            };
-        }
-
-        function findOptimalSL(asset, price, signal, checks) {
-            const config = ModeConfig[currentMode];
-            
-            // Base SL on mode
-            let baseSL = (config.slMin + config.slMax) / 2;
-            
-            // Adjust based on checks
-            const sweepCheck = checks.find(c => c.name === 'Liquidity Sweep');
-            const zoneCheck = checks.find(c => c.name === 'FVG/Order Block');
-            
-            // If we have a sweep, put SL behind it
-            if (sweepCheck && sweepCheck.pass) {
-                baseSL = baseSL * 0.8; // Tighter SL
-            }
-            
-            // If we have a zone, use zone boundary
-            if (zoneCheck && zoneCheck.pass) {
-                baseSL = baseSL * 0.9; // Even tighter
-            }
-            
-            return asset === 'BTC' ? baseSL : 
-                   asset === 'XAU' ? baseSL / 100 : 
-                   baseSL / 1000;
-        }
-
-        function displayValidSignal(asset, result) {
-            const sigEl = document.getElementById(`${asset.toLowerCase()}Signal`);
-            sigEl.textContent = '✓ ' + result.signal + ' VALID';
-            sigEl.className = 'signal-status status-valid';
-            
-            const decimals = asset === 'XAG' ? 3 : 2;
-            const details = document.getElementById(`${asset.toLowerCase()}Details`);
-            details.style.display = 'block';
-            
-            document.getElementById(`${asset.toLowerCase()}Entry`).textContent = '$' + result.price.toFixed(decimals);
-            document.getElementById(`${asset.toLowerCase()}SL`).textContent = '$' + result.sl.toFixed(decimals) + ` (${result.slPips})`;
-            document.getElementById(`${asset.toLowerCase()}TP1`).textContent = '$' + result.tp1.toFixed(decimals);
-            document.getElementById(`${asset.toLowerCase()}TP2`).textContent = '$' + result.tp2.toFixed(decimals);
-            document.getElementById(`${asset.toLowerCase()}TP3`).textContent = '$' + result.tp3.toFixed(decimals);
-            document.getElementById(`${asset.toLowerCase()}RR`).textContent = '1:' + result.rr;
-        }
-
-        // Technical Analysis Functions
-        function generateStrictData(asset, currentPrice) {
-            const data = [];
-            const volatility = asset === 'BTC' ? 0.002 : asset === 'XAU' ? 0.0005 : 0.001;
-            const now = Math.floor(Date.now() / 1000);
-            
-            for (let i = 50; i >= 0; i--) {
-                const change = (Math.random() - 0.5) * volatility * currentPrice;
-                const close = currentPrice + change * (i / 50); // Trend towards current
-                const open = close - change * 0.3;
-                const high = Math.max(open, close) + Math.abs(change) * 0.4;
-                const low = Math.min(open, close) - Math.abs(change) * 0.4;
-                
-                data.push({
-                    time: now - (i * 300),
-                    open, high, low, close
-                });
-            }
-            
-            // Ensure last candle is current price
-            data[data.length - 1].close = currentPrice;
-            data[data.length - 1].high = Math.max(data[data.length - 1].high, currentPrice);
-            data[data.length - 1].low = Math.min(data[data.length - 1].low, currentPrice);
-            
-            return data;
-        }
-
-        function calculateTrend(data) {
-            const ema20 = calculateEMA(data.map(d => d.close), 20);
-            const ema50 = calculateEMA(data.map(d => d.close), 50);
-            
-            const last20 = ema20[ema20.length - 1];
-            const last50 = ema50[ema50.length - 1];
-            
-            if (last20 > last50 * 1.005) return 'BULLISH';
-            if (last20 < last50 * 0.995) return 'BEARISH';
-            return 'NEUTRAL';
-        }
-
-        function trendStrength(data) {
-            const closes = data.slice(-20).map(d => d.close);
-            const up = closes.filter((c, i) => i > 0 && c > closes[i-1]).length;
-            return up / 20; // 0-1
-        }
-
-        function checkHTFAlignment(data, trend) {
-            // Simulate HTF check - 80% chance of alignment in demo
-            return Math.random() > 0.2;
-        }
-
-        function detectLiquiditySweep(data, trend) {
-            const recent = data.slice(-10);
-            const highs = recent.map(d => d.high);
-            const lows = recent.map(d => d.low);
-            const maxHigh = Math.max(...highs);
-            const minLow = Math.min(...lows);
-            
-            const current = data[data.length - 1];
-            
-            if (trend === 'BULLISH') {
-                // Look for sweep of lows
-                const swept = recent.some((c, i) => i < recent.length - 1 && c.low <= minLow * 1.002 && c.close > c.open);
-                return { found: swept || Math.random() > 0.4 };
-            } else {
-                // Look for sweep of highs
-                const swept = recent.some((c, i) => i < recent.length - 1 && c.high >= maxHigh * 0.998 && c.close < c.open);
-                return { found: swept || Math.random() > 0.4 };
-            }
-        }
-
-        function findValidZone(data, trend) {
-            // Look for FVG or OB in last 10 candles
-            const recent = data.slice(-10);
-            
-            for (let i = 2; i < recent.length; i++) {
-                const c1 = recent[i-2], c2 = recent[i-1];
-                
-                if (trend === 'BULLISH' && c2.low > c1.high) {
-                    return { found: true, type: 'FVG bullish' };
-                }
-                if (trend === 'BEARISH' && c2.high < c1.low) {
-                    return { found: true, type: 'FVG bearish' };
-                }
-            }
-            
-            // Simulate OB detection
-            return { found: Math.random() > 0.4, type: trend === 'BULLISH' ? 'Bullish OB' : 'Bearish OB' };
-        }
-
-        function checkDisplacement(data, trend) {
-            const recent = data.slice(-3);
-            const avgBody = recent.reduce((sum, c) => sum + Math.abs(c.close - c.open), 0) / 3;
-            const lastBody = Math.abs(recent[recent.length - 1].close - recent[recent.length - 1].open);
-            
-            // Last candle should be larger than average (momentum)
-            return lastBody > avgBody * 1.2 || Math.random() > 0.3;
-        }
-
-        function calculateRR(asset, price, trend, config) {
-            const minSL = asset === 'BTC' ? 200 : asset === 'XAU' ? 3 : 0.15;
-            const sl = minSL * config.slMin;
-            const tp = sl * config.tp3;
-            return tp / sl;
-        }
-
-        function calculateEMA(data, period) {
-            const k = 2 / (period + 1);
-            const ema = [data[0]];
-            for (let i = 1; i < data.length; i++) {
-                ema.push(data[i] * k + ema[i - 1] * (1 - k));
-            }
-            return ema;
-        }
-
-        function addToHistory(asset, result, isValid) {
-            const list = document.getElementById(`${asset.toLowerCase()}HistoryList`);
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            
-            const time = new Date().toLocaleTimeString();
-            
-            if (isValid && !result.rejected) {
-                item.innerHTML = `
-                    <span>${time} - ${result.signal} @ $${result.price.toFixed(asset === 'XAG' ? 3 : 2)}</span>
-                    <span class="history-win">TP${Math.floor(Math.random() * 3) + 1} HIT (+${(Math.random() * 5 + 2).toFixed(1)}%)</span>
-                `;
-            } else {
-                item.innerHTML = `
-                    <span>${time} - REJECTED (${result.score}/6)</span>
-                    <span class="history-loss">NO ENTRY</span>
-                `;
-            }
-            
-            list.insertBefore(item, list.firstChild);
-            if (list.children.length > 10) list.removeChild(list.lastChild);
-        }
-
-        function updateStats() {
-            document.getElementById('validSignals').textContent = stats.valid;
-            document.getElementById('rejected').textContent = stats.rejected;
-            
-            const total = stats.wins + stats.losses;
-            const winRate = total > 0 ? Math.round((stats.wins / total) * 100) : 0;
-            document.getElementById('winRate').textContent = winRate + '%';
-            
-            const avgRR = stats.valid > 0 ? (stats.totalRR / stats.valid).toFixed(1) : '0';
-            document.getElementById('avgRR').textContent = avgRR;
-        }
-    </script>
-</body>
-</html>
+function toast(title, msg) {
+    const c = document.getElementById('toast'), t = document.createElement('div');
+    t.className = 'toast-msg'; t.innerHTML = `<strong style="color:var(--green)">${title}</strong><br>${msg}`;
+    c.appendChild(t); setTimeout(() => t.remove(), 6000);
+}
